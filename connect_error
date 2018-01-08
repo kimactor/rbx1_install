@@ -1,0 +1,12 @@
+
+#If cannot connect the kobuki ,we can run this code:
+rosrun kobuki_ftdi create_udev_rules
+
+#在ROS中，通常用tab键不起运行指令
+#经常出现如下问题：
+
+[rospack] Warning: error while crawling /home/hri: boost::filesystem::status: Permission denied: "/home/hri/.gvfs"
+
+#解决办法：
+sudo umount /home/hri/.gvfs
+rm -rf .gvfs/
