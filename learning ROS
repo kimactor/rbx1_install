@@ -1,0 +1,358 @@
+ROS安装
+　我已经在我的github 上上传了脚本文件用于一键安装，不过过程中需要输入账户密码 githubde 链接是：https://github.com/kimactor/rbx1_install.git
+
+
+创建 ROS 空间有两种方式：
+Catkin/ rosbuild
+一般而言，rosbuild比较简单也易于使用，而catkin使用了更加标准的CMake规则，所以比较复杂，但是也更加灵活，特别是对于那些想整合外部现有代码或者想发布自己代码的人。关于这些如果你想了解得更全面请参阅catkin or rosbuild。
+大多情况下，为了代码的统一，下面我们以catkin 为例。
+下面我们开始创建一个catkin 工作空间：
+$ mkdir -p ~/catkin_ws/src
+$ cd ~/catkin_ws/src
+
+即使这个工作空间是空的（在'src'目录中没有任何软件包，只有一个CMakeLists.txt链接文件），你依然可以编译它：
+
+$ cd ~/catkin_ws/
+$ catkin_make
+
+catkin_make命令在catkin 工作空间中是一个非常方便的工具。如果你查看一下当前目录应该能看到'build'和'devel'这两个文件夹。在'devel'文件夹里面你可以看到几个setup.*sh文件。source这些文件中的任何一个都可以将当前工作空间设置在ROS工作环境的最顶层，想了解更多请参考catkin文档。接下来首先source一下新生成的setup.*sh文件：
+
+$ source devel/setup.bash
+
+要想保证工作空间已配置正确需确保ROS_PACKAGE_PATH环境变量包含你的工作空间目录，采用以下命令查看：
+
+$ echo $ROS_PACKAGE_PATH
+/home/<youruser>/catkin_ws/src:/opt/ros/indigo/share:/opt/ros/indigo/stacks
+
+
+
+
+ROS 文件系统介绍
+本教程中我们将会用到ros-tutorials程序包，请先安装：
+
+$ sudo apt-get install ros-<distro>-ros-tutorials
+
+使用 rospack
+用法：
+
+# rospack find [包名称]
+
+示例：
+
+$ rospack find roscpp
+
+应输出：
+
+    YOUR_INSTALL_PATH/share/roscpp
+
+如果你是在Ubuntu Linux操作系统上通过apt来安装ROS，你应该会准确地看到：
+
+/opt/ros/groovy/share/roscpp
+
+使用 roscd
+roscd是rosbash命令集中的一部分，它允许你直接切换(cd)工作目录到某个软件包或者软件包集当中。
+
+用法：
+
+# roscd [本地包名称[/子目录]]
+
+示例：
+
+$ roscd roscpp
+
+为了验证我们已经切换到了roscpp软件包目录下，现在我们可以使用Unix命令pwd来输出当前工作目录：
+
+$ pwd
+
+你应该会看到：
+
+    YOUR_INSTALL_PATH/share/roscpp
+你可以看到YOUR_INSTALL_PATH/share/roscpp和之前使用rospack find得到的路径名称是一样的。
+
+注意，就像ROS中的其它工具一样，roscd只能切换到那些路径已经包含在ROS_PACKAGE_PATH环境变量中的软件包，要查看ROS_PACKAGE_PATH中包含的路径可以输入：
+
+$ echo $ROS_PACKAGE_PATH
+
+你的ROS_PACKAGE_PATH环境变量应该包含那些保存有ROS软件包的路径，并且每个路径之间用冒号分隔开来。一个典型的ROS_PACKAGE_PATH环境变量如下：
+
+    /opt/ros/groovy/base/install/share:/opt/ros/groovy/base/install/stacks
+
+跟其他路径环境变量类似，你可以在ROS_PACKAGE_PATH中添加更多其它路径，每条路径使用冒号':'分隔。
+
+使用 rosls
+rosls是rosbash命令集中的一部分，它允许你直接按软件包的名称而不是绝对路径执行ls命令（罗列目录）。
+
+用法：
+
+# rosls [本地包名称[/子目录]]
+
+示例：
+
+$ rosls roscpp_tutorials
+
+应输出：
+
+cmake launch package.xml  srv
+
+使用Tab 自动完成输入
+当要输入一个完整的软件包名称时会变得比较繁琐。在之前的例子中roscpp tutorials是个相当长的名称，幸运的是，一些ROS工具支持TAB 自动完成输入的功能。
+
+输入：
+
+# roscd roscpp_tut<<< 现在请按TAB键 >>>
+
+当按TAB键后，命令行中应该会自动补充剩余部分：
+
+$ roscd roscpp_tutorials/
+
+这应该有用，因为roscpp tutorials是当前唯一一个名称以roscpp tut作为开头的ROS软件包。
+
+现在尝试输入：
+
+# roscd tur<<< 现在请按TAB键 >>>
+
+按TAB键后，命令应该会尽可能地自动补充完整：
+
+$ roscd turtle
+
+但是，在这种情况下有多个软件包是以turtle开头，当再次按TAB键后应该会列出所有以turtle开头的ROS软件包：
+
+    turtle_actionlib/  turtlesim/         turtle_tf/
+
+这时在命令行中你应该仍然只看到：
+
+$ roscd turtle
+
+现在在turtle后面输入s然后按TAB键：
+
+# roscd turtles<<< 请按TAB键 >>>
+
+因为只有一个软件包的名称以turtles开头，所以你应该会看到：
+
+$ roscd turtlesim/
+
+
+创建ROS程序包
+Mkdir –p ~/my_catkin_ws/src
+Cd ~/my_catkin_ws/src
+现在使用catkin_create_pkg命令来创建一个名为'beginner_tutorials'的新程序包，这个程序包依赖于std_msgs、roscpp和rospy：
+
+$ catkin_create_pkg beginner_tutorials std_msgs rospy roscpp
+
+这将会创建一个名为beginner_tutorials的文件夹，这个文件夹里面包含一个package.xml文件和一个CMakeLists.txt文件，这两个文件都已经自动包含了部分你在执行catkin_create_pkg命令时提供的信息。
+
+catkin_create_pkg命令会要求你输入package_name，如果有需要你还可以在后面添加一些需要依赖的其它程序包：
+
+# This is an example, do not try to run this
+# catkin_create_pkg <package_name> [depend1] [depend2] [depend3]
+
+之前在使用catkin_create_pkg命令时提供了几个程序包作为依赖包，现在我们可以使用rospack命令工具来查看一级依赖包。
+
+(Jan 9, 2013) There is a bug reported and already fixed in rospack in groovy, which takes sometime until the change gets reflected on your computer. If you see a similar issue like this with the next command, you can skip to the next command.
+
+$ rospack depends1 beginner_tutorials 
+
+    std_msgs
+    rospy
+roscpp
+
+编译包
+使用caktin_make
+catkin_make 是一个命令行工具，它简化了catkin的标准工作流程。你可以认为catkin_make是在CMake标准工作流程中依次调用了cmake 和 make。
+
+使用方法:
+
+# 在catkin工作空间下
+$ catkin_make [make_targets] [-DCMAKE_VARIABLES=...]
+CMake标准工作流程主要可以分为以下几个步骤：
+
+注意: 如果你运行以下命令是无效的，因为它只是一个演示CMake工作流程的例子。
+
+# 在一个CMake项目里
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ make install  # (可选)
+
+每个CMake工程在编译时都会执行这个操作过程。相反，多个catkin项目可以放在工作空间中一起编译，工作流程如下：
+
+# In a catkin workspace
+$ catkin_make
+$ catkin_make install  # (可选)
+
+上述命令会编译src文件夹下的所有catkin工程。想更深入了解请参考REP128。 如果你的源代码不在默认工作空间中（~/catkin_ws/src),比如说存放在了my_src中，那么你可以这样来使用catkin_make:
+
+注意: 运行以下命令时无效的，因为my_src不存在。
+
+# In a catkin workspace
+$ catkin_make --source my_src
+$ catkin_make install --source my_src  # (optionally)
+
+对于catkin_make更高级的使用方法，请参考catkin/commands/catkin_make
+build目录是build space的默认所在位置，同时cmake和make也是在这里被调用来配置并编译你的程序包。
+devel目录是devel space的默认所在位置, 同时也是在你安装程序包之前存放可执行文件和库文件的地方。
+现在我们已成功编译了一个ROS程序包，接下来我们将介绍ROS节点.
+
+理解节点：
+图概念概述
+Nodes:节点,一个节点即为一个可执行文件，它可以通过ROS与其它节点进行通信。
+Messages:消息，消息是一种ROS数据类型，用于订阅或发布到一个话题。
+Topics:话题,节点可以发布消息到话题，也可以订阅话题以接收消息。
+Master:节点管理器，ROS名称服务 (比如帮助节点找到彼此)。
+rosout: ROS中相当于stdout/stderr。
+roscore: 主机+ rosout + 参数服务器 (参数服务器会在后面介绍)。
+节点
+一个节点其实只不过是ROS程序包中的一个可执行文件。
+ROS节点可以使用ROS客户库与其他节点通信。
+节点可以发布或接收一个话题。
+节点也可以提供或使用某种服务。
+客户端库
+ROS客户端库允许使用不同编程语言编写的节点之间互相通信:
+rospy = python 客户端库
+roscpp = c++ 客户端库
+rosjs = javascripts客户端库
+rosjava = java客户端库
+
+
+rosnode list
+rosnode cleanup
+
+理解话题：
+使用 rqt_graph
+rqt_graph能够创建一个显示当前系统运行情况的动态图形。
+rqt_graph是rqt程序包中的一部分。
+如果你没有安装，请通过以下命令来安装：
+$ sudo apt-get install ros-<distro>-rqt
+$ sudo apt-get install ros-<distro>-rqt-common-plugins
+请使用你的ROS版本名称（比如hydro、indigo等）来替换掉。
+在一个新终端中运行:
+$ rosrun rqt_graph rqt_graph
+你会看到类似下图所示的图形：
+
+
+rostopic介绍
+rostopic命令工具能让你获取有关ROS话题的信息。
+你可以使用帮助选项查看rostopic的子命令：
+$ rostopic -h
+显示：
+rostopic bw     display bandwidth used by topic
+rostopic echo   print messages to screen
+rostopic hz     display publishing rate of topic
+rostopic list   print information about active topics
+rostopic pub    publish data to topic
+rostopic type   print topic type
+接下来我们将使用其中的一些子命令来查看turtlesim。
+ROS Messages
+话题之间的通信是通过在节点之间发送ROS消息实现的。
+对于发布器(turtle_teleop_key和订阅器(turtulesim_node)之间的通信，发布器和订阅器之间必须发送和接收相同类型的消息。
+这意味着话题的类型是由发布在它上面的消息类型决定的。
+使用rostopic type命令可以查看发布在某个话题上的消息类型。
+使用 rostopic type
+rostopic type命令用来查看所发布话题的消息类型。
+用法：
+rostopic type [topic]
+运行(非hydro版)：
+$ rostopic type /turtle1/command_velocity
+你应该会看到:
+turtlesim/Velocity
+hydro版请运行：
+$ rostopic type /turtle1/cmd_vel
+你应该会看到:
+geometry_msgs/Twist
+我们可以使用rosmsg命令来查看消息的详细情况（非hydro版)：
+$ rosmsg show turtlesim/Velocity
+显示：
+float32 linear
+float32 angular
+hydro版：
+$ rosmsg show geometry_msgs/Twist
+显示：
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+现在我们已经知道了turtlesim节点所期望的消息类型，接下来我们就可以给turtle发布命令了。
+使用 rostopic pub
+rostopicpub可以把数据发布到当前某个正在广播的话题上。
+用法：
+$ rostopic pub [topic] [msg_type] [args]
+
+$ rostopic pub -1 /turtle1/cmd_vel geometry_msgs/Twist -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, 1.8]'
+
+
+这是一个非常复杂的例子，因此让我们来详细分析一下其中的每一个参数。
+rostopic pub
+这条命令将会发布消息到某个给定的话题。
+  -1
+（单个破折号）这个参数选项使rostopic发布一条消息后马上退出。
+/turtle1/command_velocity
+这是消息所发布到的话题名称。
+turtlesim/Velocity
+这是所发布消息的类型。
+--
+（双破折号）这会告诉命令选项解析器接下来的参数部分都不是命令选项。
+这在参数里面包含有破折号-（比如负号）时是必须要添加的。
+2.0 1.8
+
+正如之前提到的，在一个turtlesim/Velocity消息里面包含有两个浮点型元素：linear和angular。
+
+
+在本例中2.0是linear的值，1.8是angula的值。
+
+
+这些参数其实是按照YAML语法格式编写的，这在YAML文档中有更多的描述。
+
+
+你可能已经注意到turtle已经停止移动了。
+
+
+这是因为turtle需要一个稳定的频率为1Hz的命令流来保持移动状态。
+
+
+我们可以使用rostopic pub -r命令来发布一个稳定的命令流（非hydro版）：
+
+$ rostopic pub /turtle1/command_velocity turtlesim/Velocity -r 1 -- 2.0  -1.8
+hydro版：
+$ rostopic pub /turtle1/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, 1.8]'
+这条命令以1Hz的频率发布速度命令到速度话题上。
+
+
+
+
+我们也可以看一下rqt_graph中的情形
+可以看到rostopic发布器节点（红色）正在与rostopic echo节点（绿色）进行通信：
+
+
+正如你所看到的，turtle正沿着一个圆形轨迹连续运动。
+我们可以在一个新终端中通过rostopic echo命令来查看turtlesim所发布的数据。
+使用 rostopic hz
+rostopic hz命令可以用来查看数据发布的频率。
+用法：
+rostopic hz [topic]
+我们看一下turtlesim_node发布/turtle/pose时有多快：
+$ rostopic hz /turtle1/pose
+你会看到：
+subscribed to [/turtle1/pose]
+average rate: 59.354
+        min: 0.005s max: 0.027s std dev: 0.00284s window: 58
+average rate: 59.459
+        min: 0.005s max: 0.027s std dev: 0.00271s window: 118
+average rate: 59.539
+        min: 0.004s max: 0.030s std dev: 0.00339s window: 177
+average rate: 59.492
+        min: 0.004s max: 0.030s std dev: 0.00380s window: 237
+average rate: 59.463
+        min: 0.004s max: 0.030s std dev: 0.00380s window: 290
+现在我们可以知道了turtlesim正以大约60Hz的频率发布数据给turtle。
+我们也可以结合rostopic type和rosmsg show命令来获取关于某个话题的更深层次的信息（非hydro版）：
+$ rostopic type /turtle1/command_velocity | rosmsg show
+hydro版：
+rostopic type /turtle1/cmd_vel | rosmsg show
+到此我们已经完成了通过rostopic来查看话题相关情况的过程，接下来我将使用另一个工具来查看turtlesim发布的数据。
+
+
